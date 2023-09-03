@@ -2,6 +2,7 @@ import shinyswatch
 from shiny import App, Inputs, Outputs, Session, render, ui, reactive
 import pandas
 from docxtpl import DocxTemplate
+# from docxtpl import DocxTemplate
 import numpy as np
 import asyncio
 import io
@@ -12,8 +13,17 @@ import os,sys
 from citeproc import CitationStylesStyle, CitationStylesBibliography
 from citeproc.source.json import CiteProcJSON
 from citeproc.source.bibtex import BibTeX
+# import win32com.client as win32 
+# from citeproc import CitationStylesStyle, CitationStylesBibliography
+# from citeproc.source.json import CiteProcJSON
+# from citeproc.source.bibtex import BibTeX
 import openai
 import pickle
+
+# pip install citeproc-py
+# https://pypi.org/project/citeproc-py/
+
+
 
 #GPT API Setting
 API_KEY = "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"
@@ -37,115 +47,103 @@ app_ui = ui.page_navbar(
     shinyswatch.theme.superhero(),
     ui.nav( 'The Syllabus Build Guide',
         ui.panel_main(
+    ui.nav( '',
+
             ui.navset_tab(
                 ui.nav(
-                    "Introduction Information",       
-                        ui.input_text_area('programname','Program Name',' [Insert program name]',width='500px',height='100px'),
-                        ui.input_text_area('classnameandnumber','Class Name and Number',"[Course Title and Number]",width='500px',height='100px'),
-                        ui.input_text_area('classtime','Class Time',"[Scheduled Meeting Times]",width='500px',height='100px'),
-                        ui.input_text_area('credits','Credits','[Number of credits]',width='500px',height='100px'),
-                        ui.input_text_area('coursetype','Course Type','[Core course or Elective]',width='500px',height='100px'),                         
-                        ui.input_text_area('instructor','Instructor','[Name, title, email address and phone number]',width='500px',height='100px'),
-                        ui.input_text_area('officehours','Office Hours','[SPS Policy: Must state date, time and location; may also indicate by appointment]',width='500px',height='100px'),
-                        ui.input_text_area('responsepolicy','Response Policy:','[Include a brief statement about your preferred means of communication and when students should expect a response from you. Will you be available 24/7 or during the workweek only? Will you generally respond within 12 or 24 hours?]',width='500px',height='100px'),
-                        ui.input_text_area('TA','Facilitator/Teaching Assistant,','[Name, title, email address and phone number]',width='500px',height='100px'),
-                        ui.input_text_area('TAofficehours','TA Office Hours','[SPS policy: Must state date, time and location; may also indicate by appointment]',width='500px',height='100px'),
-                        ui.input_text_area('TAresponsepolicy','Response Policy:','[Include a brief statement about your preferred means of communication and when students should expect a response from you. Will you be available 24/7 or during the workweek only? Will you generally respond within 12 or 24 hours?]',width='500px',height='100px'),
+                    "Info",       ui.HTML('<br>'),
+                        ui.input_text_area('programname','Program Name','',placeholder=' [Program Name]',width='100%',height='10px'),
+                        ui.input_text_area('classnameandnumber','Class Name and Number','',placeholder="[Course Title and Number]",width='100%',height='10px'),
+                        ui.input_text_area('classtime','Class Time','',placeholder="[Scheduled Meeting Times]",width='100%',height='10px'),
+                        ui.input_text_area('credits','Credits','',placeholder='[Number of credits]',width='100%',height='10px'),
+                        ui.input_text_area('coursetype','Course Type','',placeholder='[Core course or Elective]',width='100%',height='10px'),                         
+                        ui.input_text_area('instructor','Instructor','',placeholder='[Name, title, email address and phone number]',width='100%',height='10px'),
+                        ui.input_text_area('officehours','Office Hours','',placeholder='[SPS Policy: Must state date, time and location; may also indicate by appointment]',width='100%',height='10px'),
+                        ui.input_text_area('responsepolicy','Response Policy:','',placeholder='[Include a brief statement about your preferred means of communication and when students should expect a response from you. Will you be available 24/7 or during the workweek only? Will you generally respond within 12 or 24 hours?]',width='100%',height='64px'),
+                        ui.input_text_area('TA','Facilitator/Teaching Assistant,','',placeholder='[Name, title, email address and phone number]',width='100%',height='10px'),
+                        ui.input_text_area('TAofficehours','TA Office Hours','',placeholder='[SPS policy: Must state date, time and location; may also indicate by appointment]',width='100%',height='10px'),
+                        ui.input_text_area('TAresponsepolicy','Response Policy:','',placeholder='[Include a brief statement about your preferred means of communication and when students should expect a response from you. Will you be available 24/7 or during the workweek only? Will you generally respond within 12 or 24 hours?]',width='100%',height='64px'),
                         ),
                 ui.nav(
-                    "Course Overview",       
-                        ui.input_text_area('courseoverview1','First Paragraph','''(a)	Provide a stimulating and descriptive overview of the course. Be sure to include:     
-                                           i.	 the course’s main topics    
-                                           ii.	for whom the course is designed (e.g., for everyone in the program or primarily for those pursuing a special track)''',width='500px',height='200px'),
-                        ui.input_text_area('courseoverview2','Second Paragraph','''(b)	Identify the larger programmatic goals that the course serves. Include:
-                                            i.	how the course relates to the primary concepts and principles of the discipline
-                                            ii.	how the course fits in with the program curriculum
-                                            ''',width='500px',height='200px'),
-                        ui.input_text_area('courseoverview3','Third Paragraph','''(c)	Course logistics.
-                                            Indicate:
-                                            i.	whether the course is a required core course or an elective
-                                            ii.	whether or not it will be open, space permitting, to cross-registrants from other fields and/or Columbia University programs; if so which ones
-                                            iii.	whether specific competencies or prerequisite knowledge or course work in the discipline are required
-                                            iv.	Course Modality (Describe delivery modality: e.g., online, on-campus, hybrid/Hy-flex
-                                            v.	Duration. Describe whether the course is: Full semester  Block Week, Partial semester, Residencies; Other format: ___________________________________ ]
-                                            ''',width='500px',height='400px'),
+                    "Overview",       ui.HTML('<br>'),
+                        ui.input_text_area('courseoverview1','First Paragraph','',placeholder='''(a)	Provide a stimulating and descriptive overview of the course. Be sure to include:     
+                                           i. the course’s main topics    
+                                           ii. for whom the course is designed (e.g., for everyone in the program or primarily for those pursuing a special track)''',width='100%',height='200px'),
+                        ui.input_text_area('courseoverview2','Second Paragraph','',placeholder='''(b)	Identify the larger programmatic goals that the course serves. Include:
+                                            i. how the course relates to the primary concepts and principles of the discipline
+                                            ii. how the course fits in with the program curriculum
+                                            ''',width='100%',height='200px'),
+                        ui.input_text_area('courseoverview3','Third Paragraph','',placeholder='''(c)	Course logistics. Indicate:
+                                            i. whether the course is a required core course or an elective
+                                            ii. whether or not it will be open, space permitting, to cross-registrants from other fields and/or Columbia University programs; if so which ones
+                                            iii. whether specific competencies or prerequisite knowledge or course work in the discipline are required
+                                            iv. Course Modality (Describe delivery modality: e.g., online, on-campus, hybrid/Hy-flex
+                                            v. Duration. Describe whether the course is: Full semester  Block Week, Partial semester, Residencies; or Other format]
+                                            ''',width='100%',height='200px'),
                                      
                 ),
                 ui.nav(
-                    "Learning Objectives ",       
-                        ui.input_text_area('l1','L1','''[Graduate-level learning objectives encompass learning outcomes that require higher-level functioning, critical analysis, and application to professional fields. Such learning objectives will include observable and actionable verbs such as analyze, critique, design, apply, evaluate, etc. Most SPS courses define 4-6 objectives. Consult a one-page primer from Columbia’s Mailman School. See an example of an SPS graduate course syllabus here. SPS Instructional Design team members can also help you with writing objectives aligned with program goals. Please contact the Senior Director of Instructional Design and Curriculum Support, Ariel Fleurimond, af2830@columbia.edu.
-                                            These course-level learning objectives should align with programmatic objectives and be: 
-                                            •	observable and measurable
-                                            •	designed for the level and purpose of the course
-                                            •	be focused on the what the learner will do (not what the instructor will teach)
-                                            •	labeled L1, L2, etc. and linked to assignments and activities in the appropriate section.]
-                                            ''',width='500px',height='200px'),
-                        ui.input_text_area('l2','L2',width='500px',height='100px'),
-                        ui.input_text_area('l3','L3',width='500px',height='100px'), 
-                        ui.input_text_area('l4','L4',width='500px',height='100px'), 
-                        ui.input_text_area('l5','L5',width='500px',height='100px'), 
-                        ui.input_text_area('l6','L6',width='500px',height='100px'),   
+                    "Objectives ",       ui.HTML('<br>'),
+                        ui.output_text_verbatim('textout_LearningOutcomes'),
+                        ui.input_text_area('l1','L1',width='100%'),
+                        ui.input_text_area('l2','L2',width='100%'),
+                        ui.input_text_area('l3','L3',width='100%'), 
+                        ui.input_text_area('l4','L4',width='100%'), 
+                        ui.input_text_area('l5','L5',width='100%'), 
+                        ui.input_text_area('l6','L6',width='100%'),   
                           
                 ),
                 ui.nav(
-                     "Readings", 
+                     "Readings", ui.HTML('<br>'),
                      {'id' :'readings'},
                           
                         ui.input_select("citation", "Select Your citation Style", {"APA": "APA", "MLA": "MLA", "Chicago": "Chicago"}),
-                        ui.input_text_area('citationinfo','Citation information(Replace the information inside[] )','This is a [Book/Website/Video], the Author(s) is [ NULL ], Title of the book/webpage/article is [ NULL ], Year of publication/Date accessed is [ NULL ], Publisher/Title of the journal is [ NULL ], Page numbers is [ NULL ], Other information: [ NULL ]',width='500px',height='100px'),
+                        ui.input_text_area('citationinfo','Citation information(Replace the information inside[] )','',placeholder='This is a [Book/Website/Video], the Author(s) is [ NULL ], Title of the book/webpage/article is [ NULL ], Year of publication/Date accessed is [ NULL ], Publisher/Title of the journal is [ NULL ], Page numbers is [ NULL ], Other information: [ NULL ]',width='100%'),
                         ui.input_action_button('action_send','Send'),
                         ui.output_text('citecomplete', 'Cite result'),
-                        ui.input_text_area('books','Books (Copy the citation into this box)','''[Identify required and recommended readings for the course. Required readings should include a balance of graduate-level practitioner texts and primary academic sources (scholarly articles from peer-reviewed journals in the discipline). Texts have sufficient breadth, depth, and currency for the student to learn the subject at a Master's level and achieve the stated course learning objectives. 
+                        ui.input_text_area('books','Books (Copy the citation into this box)','',placeholder='''[Identify required and recommended readings for the course. Required readings should include a balance of graduate-level practitioner texts and primary academic sources (scholarly articles from peer-reviewed journals in the discipline). Texts have sufficient breadth, depth, and currency for the student to learn the subject at a Master's level and achieve the stated course learning objectives. 
                                             Provide full citations (author, publisher, publication year, etc.), using a recognized citation format, such as MLA, APA or Chicago Style format, after consultation with your academic director. Include page numbers, page counts, and media listening/viewing times so that students can assess the reading workload. Indicate to students where they may find the materials (e.g., Canvas folders, library, purchase from vendor, etc.). Include web links where relevant.
-                                            ''',width='500px',height='200px'),
-                        ui.input_text_area('others','Other Required Readings (Copy the citation into this box)', 'Other Required Readings (available through Canvas course site or web link)',width='500px',height='200px'),
-                        ui.input_text_area('webandvideo','Websites and Videos (Copy the citation into this box)',width='500px',height='200px'),
+                                            ''',width='100%',height='200px'),
+                        ui.input_text_area('others','Other Required Readings (Copy the citation into this box)','',placeholder= 'Other Required Readings (available through Canvas course site or web link)',width='100%',height='200px'),
+                        ui.input_text_area('webandvideo','Websites and Videos (Copy the citation into this box)',width='100%',height='200px'),
                          
 
                 ),
                 ui.nav(
-                     "Assignments and Assessments",  
-                    {'id' :'assignment'},                                                   
-                        ui.input_text_area('writeassignment','Written assignments','''[Describe here and enumerate the major graduate-level assignments of the course. These descriptions should be high-level to afford flexibility in an approved syllabus. Detailed descriptions should be contained in the Canvas course site.Assignments include all required work to be produced by students and evaluated by the instructor, including: 
-                        ●	Written assignments (e.g., case analyses, research projects, project plans, reaction papers, essays, designs, op-eds, etc.)
-                        ●	Presentations and performances (e.g., role-playing, strategic interactions, leading discussions, client meetings, etc.)
-                        ●	Exams (e.g., tests, mid-terms, in-class assessments, final exams, etc.)
-                        ●	Practice (e.g., drafts of required written, designed, or performed work, practice sets, etc.)
-                        ●	Online Interaction (synchronous or asynchronous, e.g., discussions, posts, threads, chats, etc.) 
-                        ●	Participation (assign no more than 15% of the final grade to participation. Consult with your Academic Director as to program-specific participation grading cap) 
-                        ●	Other
-                        Include statements regarding 1) how assignments help students achieve the stated learning objectives, build skills toward culminating project or exam, and develop competencies that align with the field/discipline, 2) pitch and degree of difficulty for the intended audience, 3) how you will measure students’ progress toward the course goals (formative assessment),  4) specific criteria you will use to evaluate students’ work, and 5) how and when you will provide feedback. Each of these assignments should indicate the learning objectives stated above (L1, L2, etc.). Indicate the grade weight for each assignment and whether the grade is assigned to the individual or to the group/team. Where applicable, please refer students to the Canvas course site for further specificity on assignments.]
-                        ''',width='500px',height='500px'),
-                        ui.input_text_area('present','Presentations and performances',width='500px',height='100px'),
-                        ui.input_text_area('exams','Exams',width='500px',height='100px'),
-                        ui.input_text_area('practice','Practice',width='500px',height='100px'),
-                        ui.input_text_area('onlineinteraction','Online Interaction ',width='500px',height='100px'),
-                        ui.input_text_area('participation','Participation',width='500px',height='100px'),
-                        ui.input_text_area('otherassignment','Others',width='500px',height='100px'),
+                     "Assignments",  ui.HTML('<br>'),
+                    {'id' :'assignment'},             
+                        ui.output_text_verbatim('textout_Assignments'),                                  
+                        ui.input_text_area('writeassignment','Written assignments',width='100%',height='100%'),
+                        ui.input_text_area('present','Presentations and performances',width='100%'),
+                        ui.input_text_area('exams','Exams',width='100%'),
+                        ui.input_text_area('practice','Practice',width='100%'),
+                        ui.input_text_area('onlineinteraction','Online Interaction ',width='100%'),
+                        ui.input_text_area('participation','Participation',width='100%'),
+                        ui.input_text_area('otherassignment','Others',width='100%'),
                          
                 ),
                 ui.nav(
-                     "Grading", 
+                     "Grading", ui.HTML('<br>'),
                      ui.div({'id' :'main-content'},
                      ui.input_action_button("btn", "Insert assignment"),
                      
                      )
                 ),
                 ui.nav(
-                     "Course Schedule/Course Calendar",
+                     "Schedule",ui.HTML('<br>'),
                      ui.div({'id' :'coursecalendar'},
                      ui.input_action_button("btn2", "Insert a Week"),
                      
                      )                                                
                 ),
                 ui.nav(
-                    "Course Policies",       
-                        ui.input_select('participantion', 'Participation and Attendance', {'You are expected to complete all assigned readings, attend all class sessions, and engage with others in online discussions. Your participation will require that you answer questions, defend your point of view, and challenge the point of view of others. If you need to miss a class for any reason, please discuss the absence with me in advance.' : 'You are expected to complete all assigned readings, attend all class sessions, and engage with others in online discussions. Your participation will require that you answer questions, defend your point of view, and challenge the point of view of others. If you need to miss a class for any reason, please discuss the absence with me in advance. ','I expect you to come to class on time and thoroughly prepared. I will keep track of attendance and look forward to an interesting, lively and confidential discussion. If you miss an experience in class, you miss an important learning moment and the class misses your contribution. More than one absence will affect your grade' : 'I expect you to come to class on time and thoroughly prepared. I will keep track of attendance and look forward to an interesting, lively and confidential discussion. If you miss an experience in class, you miss an important learning moment and the class misses your contribution. More than one absence will affect your grade'},width='500px'),
-                        ui.input_select('latework', 'Late work', {'There will be no credit granted to any written assignment that is not submitted on the due date noted in the course syllabus without advance notice and permission from the instructor.':'There will be no credit granted to any written assignment that is not submitted on the due date noted in the course syllabus without advance notice and permission from the instructor.','Work that is not submitted on the due date noted in the course syllabus without advance notice and permission from the instructor will be graded down 1/3 of a grade for every day it is late (e.g., from a B+ to a B).':'Work that is not submitted on the due date noted in the course syllabus without advance notice and permission from the instructor will be graded down 1/3 of a grade for every day it is late (e.g., from a B+ to a B).'},width='500px'),
-                        ui.input_text_area('citationpolicy','Citation & Submission','''[All written assignments must use standard citation format (e.g., MLA, APA, Chicago), cite sources, and be submitted to the course website (not via email).]''',width='500px',height='100px'),     
+                    "Policies",       ui.HTML('<br>'),
+                        ui.input_select('participantion', 'Participation and Attendance', {'You are expected to complete all assigned readings, attend all class sessions, and engage with others in online discussions. Your participation will require that you answer questions, defend your point of view, and challenge the point of view of others. If you need to miss a class for any reason, please discuss the absence with me in advance.' : 'You are expected to complete all assigned readings, attend all class sessions, and engage with others in online discussions. Your participation will require that you answer questions, defend your point of view, and challenge the point of view of others. If you need to miss a class for any reason, please discuss the absence with me in advance. ','I expect you to come to class on time and thoroughly prepared. I will keep track of attendance and look forward to an interesting, lively and confidential discussion. If you miss an experience in class, you miss an important learning moment and the class misses your contribution. More than one absence will affect your grade' : 'I expect you to come to class on time and thoroughly prepared. I will keep track of attendance and look forward to an interesting, lively and confidential discussion. If you miss an experience in class, you miss an important learning moment and the class misses your contribution. More than one absence will affect your grade'},width='100%'),
+                        ui.input_select('latework', 'Late work', {'There will be no credit granted to any written assignment that is not submitted on the due date noted in the course syllabus without advance notice and permission from the instructor.':'There will be no credit granted to any written assignment that is not submitted on the due date noted in the course syllabus without advance notice and permission from the instructor.','Work that is not submitted on the due date noted in the course syllabus without advance notice and permission from the instructor will be graded down 1/3 of a grade for every day it is late (e.g., from a B+ to a B).':'Work that is not submitted on the due date noted in the course syllabus without advance notice and permission from the instructor will be graded down 1/3 of a grade for every day it is late (e.g., from a B+ to a B).'},width='100%'),
+                        ui.input_text_area('citationpolicy','Citation & Submission','''[All written assignments must use standard citation format (e.g., MLA, APA, Chicago), cite sources, and be submitted to the course website (not via email).]''',width='100%'),     
                 ),
                 ui.nav(
-                    "School and University Policies and Resources",       
+                    "Resources",   ui.HTML('<br>'),    
                         ui.input_select('onlineclass', 'Does this course will use online platform?',{'yes':'Yes','no':'No'}),
                         ui.panel_conditional(
                         "input.onlineclass === 'yes' ", ui.input_text_area("online", "Online platforms policy(No need change)",''' Netiquette
@@ -161,13 +159,13 @@ app_ui = ui.page_navbar(
                         ●	Reflect on your statements and how they might impact others.
                         ●	Do not hesitate to ask for feedback.
                         ●	When in doubt, always check with your instructor for clarification.
-                        ''',width='500px',height='500px')
+                        ''',width='100%',height='100%')
                         ),
                         
 
                 ),
                 ui.nav(
-                    'Download',
+                    'i/o',ui.HTML('<br>'),
                     ui_card(
                         ui.download_button("download0", "Download your docx version class syllabus!"),
                     ),
@@ -178,9 +176,8 @@ app_ui = ui.page_navbar(
                 )
             ),
             
-        ),
 ),
-title="Columbia University School of Professional Study",
+title="Columbia University School of Professional Studies: Syllabus Builder",
 )
 
 
@@ -189,6 +186,43 @@ title="Columbia University School of Professional Study",
 
 
 def server(input: Inputs, output: Outputs, session: Session):
+
+    @output
+    @render.text
+    def textout_Assignments():
+         return '''[Describe here and enumerate the major graduate-level assignments of the course. 
+    These descriptions should be high-level to afford flexibility in an approved syllabus. 
+    Detailed descriptions should be contained in the Canvas course site.
+    Assignments include all required work to be produced by students and evaluated by the instructor, including: 
+    ●	Written assignments (e.g., case analyses, research projects, project plans, reaction papers, essays, designs, op-eds, etc.)
+    ●	Presentations and performances (e.g., role-playing, strategic interactions, leading discussions, client meetings, etc.)
+    ●	Exams (e.g., tests, mid-terms, in-class assessments, final exams, etc.)
+    ●	Practice (e.g., drafts of required written, designed, or performed work, practice sets, etc.)
+    ●	Online Interaction (synchronous or asynchronous, e.g., discussions, posts, threads, chats, etc.) 
+    ●	Participation (assign no more than 15% of the final grade to participation. Consult with your Academic Director as to program-specific participation grading cap) 
+    ●	Other
+
+Include statements regarding 
+    1) how assignments help students achieve the stated learning objectives, build skills toward culminating project or exam, and develop competencies that align with the field/discipline, 
+    2) pitch and degree of difficulty for the intended audience, 
+    3) how you will measure students’ progress toward the course goals (formative assessment),  
+    4) specific criteria you will use to evaluate students’ work, and 5) how and when you will provide feedback. Each of these assignments should indicate the learning objectives stated above (L1, L2, etc.). Indicate the grade weight for each assignment and whether the grade is assigned to the individual or to the group/team. Where applicable, please refer students to the Canvas course site for further specificity on assignments.]
+'''
+
+    @output
+    @render.text
+    def textout_LearningOutcomes():
+        return '''[Graduate-level learning objectives encompass learning outcomes that require higher-level functioning, critical analysis, and application to professional fields. 
+        Such learning objectives will include observable and actionable verbs such as analyze, critique, design, apply, evaluate, etc. Most SPS courses define 4-6 objectives. 
+        Consult a one-page primer from Columbia’s Mailman School. See an example of an SPS graduate course syllabus here. 
+        SPS Instructional Design team members can also help you with writing objectives aligned with program goals. 
+        Please contact the Senior Director of Instructional Design and Curriculum Support, Ariel Fleurimond, af2830@columbia.edu.
+These course-level learning objectives should align with programmatic objectives and be: 
+•	observable and measurable
+•	designed for the level and purpose of the course
+•	be focused on the what the learner will do (not what the instructor will teach)
+•	labeled L1, L2, etc. and linked to assignments and activities in the appropriate section.]
+'''
     
     #Create reactive value to keep btn
     contet = reactive.Value()
@@ -206,7 +240,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 
     
     # Read the Syllabus Template
-    doc = DocxTemplate("SPS Syllabus Template.docx")
+    # doc = DocxTemplate("SPS Syllabus Template.docx")
 
     
     #ChatGPT citation
@@ -277,9 +311,9 @@ def server(input: Inputs, output: Outputs, session: Session):
         ptn2 = input.btn2()        
         if ptn2 > 0:
             text = ui.input_text(f'date{input.btn2()}', f"Week{input.btn2()}Date", value=input.btn2())
-            text1 = ui.input_text(f'topic{input.btn2()}', f"Week{input.btn2()}topic", value='''Course introductions Foundations of … ''',width='500px')
-            text2 = ui.input_text(f'reading{input.btn2()}', f"Week{input.btn2()}reading", value='''Title/author Chapters 1–2, pp 105-135(30 pages) Articles x,y,z, pp 24-44 (20 pages) ''',width='500px')
-            text3 = ui.input_text(f'assignments{input.btn2()}', f"Week{input.btn2()}assignments", value='''Statement of purpose due 9/15 ''',width='500px')
+            text1 = ui.input_text(f'topic{input.btn2()}', f"Week{input.btn2()}topic", value='''Course introductions Foundations of … ''',width='100%')
+            text2 = ui.input_text(f'reading{input.btn2()}', f"Week{input.btn2()}reading", value='''Title/author Chapters 1–2, pp 105-135(30 pages) Articles x,y,z, pp 24-44 (20 pages) ''',width='100%')
+            text3 = ui.input_text(f'assignments{input.btn2()}', f"Week{input.btn2()}assignments", value='''Statement of purpose due 9/15 ''',width='100%')
             ui.insert_ui(
                 ui.div({"id": f"inserted-text{input.btn2()}"}, text),
                 selector="#coursecalendar",
@@ -418,8 +452,6 @@ def server(input: Inputs, output: Outputs, session: Session):
         convert_to_pdf(path_to_word_document)
         path = Path(__file__).parent / "Complete.pdf"
         return str(path)
-
-
 
 
 app = App(app_ui, server)
