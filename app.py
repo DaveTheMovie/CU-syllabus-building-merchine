@@ -15,7 +15,7 @@ import os,sys
 import openai
 import pickle
 
-# pip install citeproc-py
+# pip install citeproc-py 
 # https://pypi.org/project/citeproc-py/
 
 
