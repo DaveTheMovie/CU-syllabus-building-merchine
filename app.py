@@ -1,18 +1,13 @@
 import shinyswatch
 from shiny import App, Inputs, Outputs, Session, render, ui, reactive
 import pandas
-from docxtpl import DocxTemplate
 # from docxtpl import DocxTemplate
 import numpy as np
 import asyncio
 import io
 from datetime import date
 from pathlib import Path
-import win32com.client as win32 
 import os,sys
-from citeproc import CitationStylesStyle, CitationStylesBibliography
-from citeproc.source.json import CiteProcJSON
-from citeproc.source.bibtex import BibTeX
 # import win32com.client as win32 
 # from citeproc import CitationStylesStyle, CitationStylesBibliography
 # from citeproc.source.json import CiteProcJSON
@@ -45,8 +40,6 @@ def ui_card(title, *args):
 
 app_ui = ui.page_navbar(
     shinyswatch.theme.superhero(),
-    ui.nav( 'The Syllabus Build Guide',
-        ui.panel_main(
     ui.nav( '',
 
             ui.navset_tab(
